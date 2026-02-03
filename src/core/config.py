@@ -8,8 +8,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 # Базовый путь проекта
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
+
 class DatabaseSettings(BaseSettings):
-    """ Настройки подключения к PostgreSQL """
+    """Настройки подключения к PostgreSQL"""
 
     model_config = SettingsConfigDict(env_prefix="DB_")
 
@@ -20,21 +21,25 @@ class DatabaseSettings(BaseSettings):
     name: str = Field(default="production_control")
     echo: bool = Field(default=False)
 
-    @computed_field
+    @computed_field  # type: ignore[misc]
     @property
     def async_dsn(self) -> str:
-        """ DNS для асинхронного подключения (asyncpg) """
-        return f"postgresql+asyncpg://{self.user}:{self.password}@{self.host}:{self.port}/{self.name}"
+        """DNS для асинхронного подключения (asyncpg)"""
+        return (
+            f"postgresql+asyncpg://{self.user}:{self.password}@{self.host}:{self.port}/{self.name}"
+        )
 
-    @computed_field
+    @computed_field  # type: ignore[misc]
     @property
     def sync_dsn(self) -> str:
-        """ DNS для синхронного подключения (Alembic миграции) """
-        return f"postgresql+psycopg2://{self.user}:{self.password}@{self.host}:{self.port}/{self.name}"
+        """DNS для синхронного подключения (Alembic миграции)"""
+        return (
+            f"postgresql+psycopg2://{self.user}:{self.password}@{self.host}:{self.port}/{self.name}"
+        )
 
 
 class RedisSettings(BaseSettings):
-    """ Настройки подключения к Redis """
+    """Настройки подключения к Redis"""
 
     model_config = SettingsConfigDict(env_prefix="REDIS_")
 
@@ -43,17 +48,17 @@ class RedisSettings(BaseSettings):
     db: int = Field(default=0)
     password: str | None = Field(default=None)
 
-    @computed_field
+    @computed_field  # type: ignore[misc]
     @property
     def url(self) -> str:
-        """ URL для подключения к Redis """
+        """URL для подключения к Redis"""
         if self.password:
             return f"redis://:{self.password}@{self.host}:{self.port}/{self.db}"
         return f"redis://{self.host}:{self.port}/{self.db}"
 
 
 class RabbitMQSettings(BaseSettings):
-    """ Настройка подключения к RabbitMQ """
+    """Настройка подключения к RabbitMQ"""
 
     model_config = SettingsConfigDict(env_prefix="RABBITMQ_")
 
@@ -63,19 +68,19 @@ class RabbitMQSettings(BaseSettings):
     password: str = Field(default="guest")
     vhost: str = Field(default="/")
 
-    @computed_field
+    @computed_field  # type: ignore[misc]
     @property
     def url(self) -> str:
-        """ URL для подключения к RabbitMQ (AMQP """
+        """URL для подключения к RabbitMQ (AMQP"""
         return f"amqp://{self.user}:{self.password}@{self.host}:{self.port}/{self.vhost}"
 
 
 class MinIOSettings(BaseSettings):
-    """ Настройки подключения к MinIO """
+    """Настройки подключения к MinIO"""
 
     model_config = SettingsConfigDict(env_prefix="MINIO_")
 
-    host:str = Field(default="localhost")
+    host: str = Field(default="localhost")
     port: int = Field(default=9000)
     access_key: str = Field(default="minioadmin")
     secret_key: str = Field(default="minioadmin")
@@ -83,15 +88,15 @@ class MinIOSettings(BaseSettings):
     bucket_reports: str = Field(default="reports")
     bucket_imports: str = Field(default="imports")
 
-    @computed_field
+    @computed_field  # type: ignore[misc]
     @property
     def endpoint(self) -> str:
-        """ Endpoint для подключения к MinIO """
+        """Endpoint для подключения к MinIO"""
         return f"{self.host}:{self.port}"
 
 
 class CelerySettings(BaseSettings):
-    """ Настройки Celery """
+    """Настройки Celery"""
 
     model_config = SettingsConfigDict(env_prefix="CELERY_")
 
@@ -103,7 +108,7 @@ class CelerySettings(BaseSettings):
 
 
 class Settings(BaseSettings):
-    """ Главный класс настроек приложения """
+    """Главный класс настроек приложения"""
 
     model_config = SettingsConfigDict(
         env_file=BASE_DIR / ".env",
@@ -115,9 +120,7 @@ class Settings(BaseSettings):
     app_name: str = Field(default="Production Control API")
     app_version: str = Field(default="0.1.0")
     debug: bool = Field(default=False)
-    log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = Field(
-        default="INFO"
-    )
+    log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = Field(default="INFO")
 
     # Вложенные настройки сервисов
     db: DatabaseSettings = Field(default_factory=DatabaseSettings)
@@ -127,7 +130,7 @@ class Settings(BaseSettings):
     celery: CelerySettings = Field(default_factory=CelerySettings)
 
 
-@lru_cache()
+@lru_cache
 def get_settings() -> Settings:
     """
     Возвращает закэшированный экземпляр настроек.
