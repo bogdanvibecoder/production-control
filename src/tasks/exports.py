@@ -14,6 +14,7 @@ from ..core.database import async_session_factory
 from ..data.models.batch import Batch
 from ..data.models.product import Product
 from ..storage.minio_service import get_presigned_url, upload_file
+from ..utils.excel_generator import generate_export as generate_excel_export
 
 # Лимит выгрузки за один запрос
 EXPORT_LIMIT = 50_000
@@ -66,9 +67,7 @@ async def _export_data(
         content_type = "text/csv; charset=utf-8"
         extension = "csv"
     else:
-        # xlsx: заглушка до Фазы 11 (excel_generator.generate_export)
-        # Пока генерируем CSV с расширением xlsx
-        file_bytes = _build_csv(rows)
+        file_bytes = generate_excel_export(rows)
         content_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         extension = "xlsx"
 

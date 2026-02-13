@@ -12,6 +12,7 @@ from ..core.database import async_session_factory
 from ..data.models.product import Product
 from ..domain.services.batch_service import BatchService
 from ..storage.minio_service import download_file
+from ..utils.excel_parser import parse_products as parse_excel
 
 # Размер чанка для bulk-вставки
 CHUNK_SIZE = 500
@@ -119,18 +120,15 @@ def _parse_file(file_name: str, file_bytes: bytes) -> list[dict[str, str]]:
     """
     Парсинг файла в список словарей.
 
-    Поддерживает CSV. Для Excel (xlsx) — заглушка до Фазы 11
-    (будет вызов excel_parser.parse_products).
+    Поддерживает CSV и Excel (.xlsx / .xls).
 
-    Ожидаемые колонки CSV: code, product_type, extra_data (опционально)
+    Ожидаемые колонки: code, product_type, extra_data (опционально)
     """
     if file_name.endswith(".csv"):
         return _parse_csv(file_bytes)
 
     if file_name.endswith((".xlsx", ".xls")):
-        # Заглушка: в Фазе 11 заменить на excel_parser.parse_products(file_bytes)
-        logger.warning("Excel-парсинг ещё не реализован, файл: {}", file_name)
-        return []
+        return parse_excel(file_bytes)
 
     logger.error("Неподдерживаемый формат файла: {}", file_name)
     return []

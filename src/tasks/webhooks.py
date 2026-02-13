@@ -1,6 +1,4 @@
 import asyncio
-import hashlib
-import hmac
 import time
 
 import httpx
@@ -10,6 +8,7 @@ from ..celery_app import celery_app
 from ..core.database import async_session_factory
 from ..data.models.webhook import DeliveryStatus, WebhookDelivery
 from ..data.repositories.webhook_repository import WebhookRepository
+from ..utils.hmac_utils import sign as hmac_sign
 
 # Таймаут HTTP-запроса к внешнему сервису (секунды)
 HTTP_TIMEOUT = 10
@@ -51,11 +50,7 @@ async def _send_single_webhook(delivery_id: int) -> dict[str, object]:
             return {"delivery_id": delivery_id, "status": "skipped"}
 
         # --- HMAC-подпись ---
-        signature = hmac.new(
-            subscription.secret.encode("utf-8"),
-            delivery.request_body.encode("utf-8"),
-            hashlib.sha256,
-        ).hexdigest()
+        signature = hmac_sign(subscription.secret, delivery.request_body)
 
         headers = {
             "Content-Type": "application/json",

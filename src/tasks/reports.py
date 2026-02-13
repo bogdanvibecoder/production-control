@@ -9,6 +9,8 @@ from ..core.config import settings
 from ..core.database import async_session_factory
 from ..domain.services.analytics_service import AnalyticsService
 from ..storage.minio_service import get_presigned_url, upload_file
+from ..utils.excel_generator import generate_report as generate_excel_report
+from ..utils.pdf_generator import generate_report as generate_pdf_report
 
 
 async def _generate_production_report(
@@ -48,21 +50,16 @@ async def _generate_production_report(
     )
 
     # --- Шаг 2: Формируем файл ---
-    # В Фазе 11 здесь будет вызов excel_generator / pdf_generator.
-    # Пока генерируем JSON-отчёт как рабочую заглушку.
-    serializable = _make_serializable(report_data)
-
     if report_format == "xlsx":
-        # Заглушка: в Фазе 11 заменить на excel_generator.generate_report(report_data)
-        file_bytes = json.dumps(serializable, ensure_ascii=False, indent=2).encode("utf-8")
+        file_bytes = generate_excel_report(report_data)
         content_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         extension = "xlsx"
     elif report_format == "pdf":
-        # Заглушка: в Фазе 11 заменить на pdf_generator.generate_report(report_data)
-        file_bytes = json.dumps(serializable, ensure_ascii=False, indent=2).encode("utf-8")
+        file_bytes = generate_pdf_report(report_data)
         content_type = "application/pdf"
         extension = "pdf"
     else:
+        serializable = _make_serializable(report_data)
         file_bytes = json.dumps(serializable, ensure_ascii=False, indent=2).encode("utf-8")
         content_type = "application/json"
         extension = "json"
