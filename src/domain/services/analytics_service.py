@@ -29,7 +29,8 @@ class AnalyticsService:
 
         status_counts: dict[str, int] = {s.value: 0 for s in BatchStatus}
         for row in rows:
-            status_counts[row.status.value] = row.cnt
+            status_key = getattr(row.status, "value", row.status)
+            status_counts[status_key] = row.cnt
 
         total = sum(status_counts.values())
 
@@ -57,7 +58,8 @@ class AnalyticsService:
 
         product_counts: dict[str, int] = {s.value: 0 for s in ProductStatus}
         for row in rows:
-            product_counts[row.status.value] = row.cnt
+            status_key = getattr(row.status, "value", row.status)
+            product_counts[status_key] = row.cnt
 
         total_products = sum(product_counts.values())
 
@@ -70,7 +72,7 @@ class AnalyticsService:
         return {
             "batch_id": batch_id,
             "batch_number": batch.number,
-            "status": batch.status.value,
+            "status": getattr(batch.status, "value", batch.status),
             "planned_quantity": batch.planned_quantity,
             "actual_quantity": batch.actual_quantity,
             "completion_percent": completion_percent,
@@ -116,7 +118,8 @@ class AnalyticsService:
         total_batches = 0
 
         for row in rows:
-            status_counts[row.status.value] = row.cnt
+            status_key = getattr(row.status, "value", row.status)
+            status_counts[status_key] = row.cnt
             total_batches += row.cnt
             total_planned += row.planned
             total_actual += row.actual

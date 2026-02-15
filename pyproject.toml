@@ -58,6 +58,7 @@ pytest = "^8.3.4"
 pytest-asyncio = "^0.25.2"
 pytest-cov = "^6.0.0"
 faker = "^33.3.1"
+aiosqlite = "^0.20.0"
 
 # Code Quality
 black = "^24.4.2"
@@ -92,6 +93,8 @@ extend-exclude = '''
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+
+[tool.ruff.lint]
 select = [
     "E",   # pycodestyle errors
     "W",   # pycodestyle warnings
@@ -106,10 +109,11 @@ ignore = [
     "E501",  # line too long (это обрабатывает black)
     "B008",  # do not perform function calls in argument defaults (нужно для FastAPI Depends)
 ]
-
-[tool.ruff.lint]
 fixable = ["ALL"]
 unfixable = []
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["src"]
