@@ -1,0 +1,42 @@
+# Виртуальное окружение
+venv/
+.venv/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Тесты и dev-инструменты
+tests/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+
+# Docker (не копировать в контекст самого себя)
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Env-файлы (переменные передаются через docker-compose)
+.env
+.env.example
+
+# Документация
+*.md
+LICENSE
+
+# Прочее
+*.log

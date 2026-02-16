@@ -1,0 +1,43 @@
+repos:
+  # Ruff - линтер и сортировка импортов
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.4
+    hooks:
+      - id: ruff
+        args: [ --fix ]
+      - id: ruff-format
+
+  # Black - форматирование кода
+  - repo: https://github.com/psf/black
+    rev: 24.4.2
+    hooks:
+      - id: black
+        language_version: python3.11
+
+  # Mypy - проверка типов
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.10.0
+    hooks:
+      - id: mypy
+        additional_dependencies:
+          - pydantic
+          - sqlalchemy[mypy]
+        args: [ --ignore-missing-imports ]
+
+  # Bandit - сканер безопасности
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.8
+    hooks:
+      - id: bandit
+        args: [ "-c", "pyproject.toml" ]
+        additional_dependencies: [ "bandit[toml]" ]
+
+  # Стандартные проверки
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-merge-conflict

@@ -1,0 +1,179 @@
+[tool.poetry]
+name = "production-control"
+version = "0.1.0"
+description = "Система контроля заданий на выпуск продукции"
+authors = ["Bogdan <7777777@gmail.com>"]
+readme = "README.md"
+packages = [{include = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+# Web Framework
+fastapi = "^0.115.0"
+uvicorn = {extras = ["standard"], version = "^0.34.0"}
+python-multipart = "^0.0.18"
+
+# Database
+sqlalchemy = {extras = ["asyncio"], version = "^2.0.36"}
+asyncpg = "^0.30.0"
+alembic = "^1.14.0"
+
+# Validation & Serialization
+pydantic = "^2.10.5"
+pydantic-settings = "^2.7.1"
+email-validator = "^2.2.0"
+
+# Task Queue
+celery = "^5.4.0"
+redis = "^5.2.1"
+flower = "^2.0.1"
+
+# Object Storage
+minio = "^7.2.15"
+
+# HTTP Clients
+httpx = "^0.28.1"
+aiohttp = "^3.11.11"
+
+# File Processing
+openpyxl = "^3.1.5"
+pandas = "^2.2.3"
+reportlab = "^4.2.5"
+
+# Environment Variables
+python-dotenv = "^1.0.1"
+
+# Utilities
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+python-dateutil = "^2.9.0"
+
+# Logging
+loguru = "^0.7.2"
+
+[tool.poetry.group.dev.dependencies]
+# Testing
+pytest = "^8.3.4"
+pytest-asyncio = "^0.25.2"
+pytest-cov = "^6.0.0"
+faker = "^33.3.1"
+aiosqlite = "^0.20.0"
+
+# Code Quality
+black = "^24.4.2"
+ruff = "^0.4.4"
+mypy = "^1.10.0"
+bandit = "^1.7.8"
+
+# Type Stubs
+types-python-dateutil = "^2.9.0"
+types-passlib = "^1.7.7"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+# ============================================================================
+# Tool Configurations
+# ============================================================================
+
+[tool.black]
+line-length = 100
+target-version = ['py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+    \.git
+  | \.venv
+  | alembic/versions
+)/
+'''
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort (сортировка импортов)
+    "B",   # flake8-bugbear (находит потенциальные баги)
+    "C4",  # flake8-comprehensions (улучшения list/dict comprehensions)
+    "UP",  # pyupgrade (современный синтаксис Python)
+    "S",   # flake8-bandit (security checks)
+]
+ignore = [
+    "E501",  # line too long (это обрабатывает black)
+    "B008",  # do not perform function calls in argument defaults (нужно для FastAPI Depends)
+]
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = [
+    "celery.*",
+    "minio.*",
+    "reportlab.*",
+    "flower.*",
+]
+ignore_missing_imports = true
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+pythonpath = ["."]
+addopts = [
+    "--strict-markers",
+    "--cov=src",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+]
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "*/tests/*",
+    "*/alembic/*",
+    "*/__init__.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
+
+[tool.bandit]
+exclude_dirs = ["tests", "alembic"]
+skips = ["B101"]  # assert используется в тестах
