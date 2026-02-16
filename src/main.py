@@ -64,6 +64,12 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
+    description=(
+        "Система контроля заданий на выпуск продукции. "
+        "REST API для управления сменными заданиями (партиями), "
+        "учёта продукции, массовой агрегации, генерации отчётов "
+        "и webhook-уведомлений."
+    ),
     debug=settings.debug,
     lifespan=lifespan,
 )

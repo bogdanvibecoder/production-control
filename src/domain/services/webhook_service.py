@@ -112,9 +112,25 @@ class WebhookService:
         event_type: WebhookEvent,
         payload: dict[str, Any],
     ) -> list[WebhookDelivery]:
-        """
-        Инициировать отправку webhook по событию.
-        Создаёт записи доставки для всех активных подписок.
+        """Инициировать отправку webhook по событию.
+
+        Алгоритм:
+        1. Находит все активные подписки на event_type.
+        2. Сериализует payload в JSON-строку.
+        3. Для каждой подписки создаёт запись WebhookDelivery
+           со статусом PENDING и сериализованным телом запроса.
+        4. Коммитит транзакцию.
+
+        Фактическая отправка HTTP-запросов выполняется отдельной
+        Celery-задачей send_webhook_task, которая подписывает тело
+        HMAC-SHA256 и ставит заголовок X-Webhook-Signature.
+
+        Args:
+            event_type: Тип события (batch.created, product.aggregated и т.д.).
+            payload: Данные события (сериализуются в JSON).
+
+        Returns:
+            Список созданных записей WebhookDelivery (пустой, если нет подписок).
         """
         subscriptions = await self._repo.get_active_subscriptions_by_event(
             event_type,

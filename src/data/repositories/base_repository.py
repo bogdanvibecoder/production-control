@@ -10,16 +10,24 @@ ModelType = TypeVar("ModelType", bound=Base)
 
 
 class BaseRepository(Generic[ModelType]):
-    """
-    Базовый репозиторий с CRUD-операциями.
-    Все репозитории наследуются от этого класса.
+    """Базовый generic-репозиторий с CRUD-операциями.
+
+    Использует TypeVar ModelType, ограниченный Base (SQLAlchemy declarative).
+    Наследники параметризуют класс конкретной моделью::
+
+        class BatchRepository(BaseRepository[Batch]):
+            def __init__(self, session):
+                super().__init__(session, Batch)
+
+    Все методы работают через flush() (без commit), чтобы вызывающий
+    код мог управлять границами транзакции.
     """
 
     def __init__(self, session: AsyncSession, model: type[ModelType]) -> None:
         """
         Args:
-            session: Асинхронная сессия SQLAlchemy
-            model: Класс модели (например, Batch, Product)
+            session: Асинхронная сессия SQLAlchemy.
+            model: Класс модели (например, Batch, Product).
         """
         self._session = session
         self._model = model

@@ -138,7 +138,28 @@ class BatchService:
         batch_id: int,
         new_status: BatchStatus,
     ) -> Batch:
-        """Сменить статус партии с валидацией перехода."""
+        """Сменить статус партии с валидацией перехода.
+
+        Проверяет допустимость перехода по матрице ALLOWED_STATUS_TRANSITIONS:
+        - planned → in_progress, cancelled
+        - in_progress → completed, cancelled
+        - completed → (терминальный)
+        - cancelled → (терминальный)
+
+        При переходе в IN_PROGRESS проставляется started_at.
+        При переходе в COMPLETED или CANCELLED проставляется completed_at.
+
+        Args:
+            batch_id: ID партии для смены статуса.
+            new_status: Целевой статус.
+
+        Returns:
+            Обновлённая партия.
+
+        Raises:
+            BatchNotFoundError: Партия не найдена.
+            InvalidBatchStatusError: Переход недопустим.
+        """
         batch = await self.get_by_id(batch_id)
 
         allowed = ALLOWED_STATUS_TRANSITIONS.get(batch.status, set())

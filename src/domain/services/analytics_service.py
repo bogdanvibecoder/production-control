@@ -87,7 +87,23 @@ class AnalyticsService:
         *,
         work_center_id: int | None = None,
     ) -> dict[str, Any]:
-        """Отчёт по производству за период."""
+        """Отчёт по производству за период.
+
+        Агрегирует данные по партиям в указанном диапазоне дат:
+        - Количество партий по статусам (GROUP BY status)
+        - Суммарный план (planned_quantity) и факт (actual_quantity)
+        - Процент выполнения: (actual / planned * 100), округлённый до 0.01
+
+        Args:
+            date_from: Начало периода (включительно).
+            date_to: Конец периода (включительно).
+            work_center_id: Фильтр по рабочему центру (опционально).
+
+        Returns:
+            Словарь с ключами: date_from, date_to, work_center_id,
+            total_batches, batches_by_status, total_planned,
+            total_actual, completion_percent.
+        """
         conditions = [
             Batch.shift_date >= date_from,
             Batch.shift_date <= date_to,

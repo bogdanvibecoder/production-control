@@ -151,9 +151,27 @@ class ProductService:
         codes: list[str],
         new_status: ProductStatus,
     ) -> int:
-        """
-        Массово обновить статус продукции по списку кодов.
-        Возвращает количество обновлённых записей.
+        """Массово обновить статус продукции по списку кодов.
+
+        Алгоритм:
+        1. Загружает все продукции по переданным кодам.
+        2. Валидирует допустимость перехода для каждой единицы.
+        3. Обновляет статус одним bulk-запросом (UPDATE ... WHERE code IN).
+        4. Коммитит транзакцию.
+
+        Если хотя бы одна единица имеет недопустимый переход,
+        выбрасывается исключение до выполнения UPDATE.
+
+        Args:
+            codes: Список уникальных кодов продукции (до 1000).
+            new_status: Целевой статус для всех единиц.
+
+        Returns:
+            Количество обновлённых записей.
+
+        Raises:
+            ProductNotFoundError: Ни один код не найден в БД.
+            InvalidProductStatusError: Недопустимый переход для одной из единиц.
         """
         products = await self._repo.get_by_codes(codes)
 
@@ -175,7 +193,21 @@ class ProductService:
         current: ProductStatus,
         new: ProductStatus,
     ) -> None:
-        """Проверить допустимость перехода статуса."""
+        """Проверить допустимость перехода статуса продукции.
+
+        Допустимые переходы (ALLOWED_PRODUCT_TRANSITIONS):
+        - produced → aggregated, rejected
+        - aggregated → shipped
+        - rejected → (терминальный)
+        - shipped → (терминальный)
+
+        Args:
+            current: Текущий статус продукции.
+            new: Целевой статус.
+
+        Raises:
+            InvalidProductStatusError: Переход недопустим.
+        """
         allowed = ALLOWED_PRODUCT_TRANSITIONS.get(current, set())
         if new not in allowed:
             raise InvalidProductStatusError(
