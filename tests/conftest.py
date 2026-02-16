@@ -25,6 +25,7 @@ from src.data.models.webhook import (
     WebhookSubscription,
 )
 from src.data.models.work_center import WorkCenter
+from src.main import app
 
 # ---------------------------------------------------------------------------
 # Тестовый движок (async SQLite in-memory)
@@ -101,7 +102,6 @@ async def client(session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
     Подменяет зависимость get_async_session на тестовую сессию,
     чтобы API-эндпоинты работали с in-memory SQLite.
     """
-    from src.main import app
 
     async def _override_session() -> AsyncGenerator[AsyncSession, None]:
         yield session

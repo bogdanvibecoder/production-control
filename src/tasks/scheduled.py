@@ -8,6 +8,7 @@ from ..celery_app import celery_app
 from ..core.database import async_session_factory
 from ..data.models.batch import Batch, BatchStatus
 from ..data.models.webhook import DeliveryStatus, WebhookDelivery
+from .reports import generate_report_task
 
 # Порог «зависшей» партии — если IN_PROGRESS дольше этого, считаем stale
 STALE_BATCH_HOURS = 24
@@ -71,8 +72,6 @@ async def _generate_daily_report() -> dict[str, object]:
     Ставит задачу generate_report_task из модуля reports,
     чтобы не дублировать логику генерации.
     """
-    from .reports import generate_report_task
-
     yesterday = datetime.now(UTC).date() - timedelta(days=1)
     date_from = datetime(yesterday.year, yesterday.month, yesterday.day, tzinfo=UTC)
     date_to = date_from + timedelta(days=1)

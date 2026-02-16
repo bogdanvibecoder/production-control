@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, status
@@ -103,8 +104,6 @@ async def get_batches(
     - `offset`: текущее смещение
     - `limit`: размер страницы
     """
-    from datetime import datetime
-
     service = BatchService(session)
 
     # Парсинг дат из строк

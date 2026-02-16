@@ -1,5 +1,9 @@
 from fastapi import APIRouter, status
 
+from ....celery_app import celery_app
+from ....tasks.aggregation import aggregate_products_task
+from ....tasks.exports import export_data_task
+from ....tasks.imports import import_products_task
 from ..schemas.task import (
     AggregationTaskRequest,
     ExportTaskRequest,
@@ -37,8 +41,6 @@ async def get_task_status(task_id: str) -> TaskResponse:
 
     **Возвращает:** информацию о задаче: статус, результат, ошибки, прогресс.
     """
-    from ....celery_app import celery_app
-
     result = celery_app.AsyncResult(task_id)
 
     response = TaskResponse(
@@ -77,8 +79,6 @@ async def launch_import(data: ImportTaskRequest) -> TaskCreate:
 
     **Возвращает:** `task_id` для отслеживания прогресса.
     """
-    from ....tasks.imports import import_products_task
-
     result = import_products_task.delay(
         batch_id=data.batch_id,
         file_name=data.file_name,
@@ -108,8 +108,6 @@ async def launch_export(data: ExportTaskRequest) -> TaskCreate:
     **Возвращает:** `task_id` для отслеживания прогресса.
     После завершения в `result` будет ссылка на файл в MinIO.
     """
-    from ....tasks.exports import export_data_task
-
     result = export_data_task.delay(
         export_format=data.export_format,
         date_from=data.date_from.isoformat() if data.date_from else None,
@@ -138,8 +136,6 @@ async def launch_aggregation(data: AggregationTaskRequest) -> TaskCreate:
 
     **Возвращает:** `task_id` для отслеживания прогресса.
     """
-    from ....tasks.aggregation import aggregate_products_task
-
     result = aggregate_products_task.delay(
         batch_id=data.batch_id,
         codes=data.codes,
@@ -168,8 +164,6 @@ async def revoke_task(task_id: str) -> TaskResponse:
 
     **Возвращает:** обновлённый статус задачи.
     """
-    from ....celery_app import celery_app
-
     celery_app.control.revoke(task_id, terminate=True)
 
     return TaskResponse(

@@ -1,3 +1,4 @@
+from datetime import timedelta
 from io import BytesIO
 
 from loguru import logger
@@ -178,8 +179,6 @@ def get_presigned_url(
     Returns:
         Presigned URL
     """
-    from datetime import timedelta
-
     client = _get_client()
 
     extra_query_params = None
